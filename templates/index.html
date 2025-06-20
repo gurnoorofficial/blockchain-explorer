@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TimeChain App + Signature Verify</title>
+  <meta charset="UTF-8" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    nav button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    nav button.active {
+      font-weight: bold;
+      background-color: #ddd;
+    }
+    section { display: none; margin-top: 20px; }
+    section.active { display: block; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    textarea, input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px 20px; }
+    pre { background: #eee; padding: 10px; overflow-x: auto; white-space: pre-wrap; }
+    .block { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>⛓️ TimeChain </h1>
+
+  <nav>
+    <button class="tab-btn active" data-tab="explorer">Explorer</button>
+    <button class="tab-btn" data-tab="add">Add Block</button>
+    <button class="tab-btn" data-tab="signer">Sign Message</button>
+    <button class="tab-btn" data-tab="keygen">Generate ETH Key</button>
+    <button class="tab-btn" data-tab="verify">Verify Chain</button>
+    <button class="tab-btn" data-tab="sigverify">Signature Verify</button>
+  </nav>
+
+  <!-- Explorer -->
+  <section id="explorer" class="active">
+    <h2>Block Explorer</h2>
+    <button onclick="loadBlocks()">🔄 Refresh Blocks</button>
+    <div id="chain"></div>
+  </section>
+
+  <!-- Add Block -->
+  <section id="add">
+    <h2>Add New Block</h2>
+    <label for="msg">Message</label>
+    <textarea id="msg" rows="3" placeholder="Enter your message here..."></textarea>
+
+    <label for="sig">Signature (130 hex chars)</label>
+    <input id="sig" type="text" placeholder="0x..." />
+
+    <button onclick="addBlock()">Add Block</button>
+
+    <pre id="status"></pre>
+  </section>
+
+  <!-- Sign Message -->
+  <section id="signer">
+    <h2>Sign Message with Timestamp</h2>
+    <label for="sign-msg">Message to Sign</label>
+    <textarea id="sign-msg" rows="3" placeholder="Enter message to sign..."></textarea>
+
+    <label for="private-key">Ethereum Private Key (0x...)</label>
+    <input id="private-key" type="text" placeholder="0x..." />
+
+    <button onclick="signMessage()">Generate Signature</button>
+
+    <h3>Result</h3>
+    <pre id="sign-result"></pre>
+  </section>
+
+  <!-- Key Generation -->
+  <section id="keygen">
+    <h2>Generate Random Ethereum Key</h2>
+    <button onclick="generateKey()">Generate New Key</button>
+    <pre id="key-output"></pre>
+  </section>
+
+  <!-- Verify Blockchain -->
+  <section id="verify">
+    <h2>Verify Entire Blockchain</h2>
+    <button onclick="verifyChain()">Run Verification</button>
+    <pre id="verify-result"></pre>
+  </section>
+
+  <!-- Signature Verification -->
+  <section id="sigverify">
+    <h2>Signature Verification</h2>
+    <label for="verify-msg">Message</label>
+    <textarea id="verify-msg" rows="3" placeholder="Enter the message..."></textarea>
+
+    <label for="verify-sig">Signature (hex)</label>
+    <input id="verify-sig" type="text" placeholder="0x..." />
+
+    <button onclick="verifySignature()">Verify Signature</button>
+
+    <pre id="verify-sig-result"></pre>
+  </section>
+
+  <script>
+    // Tab switching
+    const tabs = document.querySelectorAll('nav .tab-btn');
+    const sections = document.querySelectorAll('section');
+    tabs.forEach(tab => {
+      tab.onclick = () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        sections.forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      };
+    });
+
+    // Load blocks
+    async function loadBlocks() {
+      const res = await fetch('/chain');
+      const data = await res.json();
+      const container = document.getElementById('chain');
+      if (data.length === 0) {
+        container.innerHTML = '<p>No blocks yet.</p>';
+        return;
+      }
+      container.innerHTML = data.map(b => `
+        <div class="block">
+          <strong>Block #${b.index}</strong><br/>
+          Time: ${b.timestamp}<br/>
+          Message: ${b.message}<br/>
+          Signature: ${b.signature}<br/>
+          ETH Address: ${b.eth_address}<br/>
+          Ethereum Block #: ${b.eth_block_number}<br/>
+          Previous Hash: ${b.previous_hash}<br/>
+          Hash: ${b.hash}<br/>
+        </div>
+      `).join('');
+    }
+
+    // Add block
+    async function addBlock() {
+      const message = document.getElementById('msg').value.trim();
+      const signature = document.getElementById('sig').value.trim();
+      const status = document.getElementById('status');
+
+      if (!message || !signature) {
+        status.textContent = '⚠️ Please enter both message and signature.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/add_block', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, signature })
+        });
+
+        const json = await res.json();
+        if (!res.ok) {
+          status.textContent = `❌ Error: ${json.error || JSON.stringify(json)}`;
+        } else {
+          status.textContent = `✅ Block #${json.index} added!`;
+          loadBlocks(); // refresh block list
+          document.getElementById('msg').value = '';
+          document.getElementById('sig').value = '';
+        }
+      } catch (e) {
+        status.textContent = `❌ Network or server error: ${e.message}`;
+      }
+    }
+
+    // Sign message with timestamp
+    function signMessage() {
+      const baseMessage = document.getElementById('sign-msg').value.trim();
+      const privKeyHex = document.getElementById('private-key').value.trim();
+
+      if (!baseMessage || !privKeyHex) {
+        document.getElementById('sign-result').textContent = '⚠️ Please enter both message and private key.';
+        return;
+      }
+      if (!privKeyHex.startsWith('0x') || privKeyHex.length !== 66) {
+        document.getElementById('sign-result').textContent = '❌ Private key must start with 0x and be 66 characters long.';
+        return;
+      }
+
+      try {
+        const wallet = new ethers.Wallet(privKeyHex);
+        const timestamp = new Date().toISOString();
+        const fullMessage = `${baseMessage} ${timestamp}`;
+
+        wallet.signMessage(fullMessage).then(signature => {
+          document.getElementById('sign-result').textContent =
+            `Ethereum Address: ${wallet.address}\n\n` +
+            `Signed Message: ${fullMessage}\n\n` +
+            `Signature: ${signature}`;
+
+          document.getElementById('msg').value = fullMessage;
+          document.getElementById('sig').value = signature;
+        });
+      } catch (e) {
+        document.getElementById('sign-result').textContent = '❌ Error: ' + e.message;
+      }
+    }
+
+    // Generate random ETH key
+    function generateKey() {
+      const wallet = ethers.Wallet.createRandom();
+      const output =
+        `Address: ${wallet.address}\n\n` +
+        `Private Key: ${wallet.privateKey}`;
+      document.getElementById('key-output').textContent = output;
+    }
+
+    // Verify blockchain
+    async function verifyChain() {
+      const resultEl = document.getElementById('verify-result');
+      resultEl.textContent = '⏳ Verifying blockchain...';
+
+      try {
+        const res = await fetch('/verify_chain');
+        const data = await res.json();
+        if (res.ok) {
+          resultEl.textContent = data.messages.join('\n');
+        } else {
+          resultEl.textContent = `❌ Error: ${data.error || 'Unknown error'}`;
+        }
+      } catch (e) {
+        resultEl.textContent = '❌ Network or server error: ' + e.message;
+      }
+    }
+
+    // Signature verification
+    async function verifySignature() {
+      const message = document.getElementById('verify-msg').value.trim();
+      const signature = document.getElementById('verify-sig').value.trim();
+
+      if (!message || !signature) {
+        document.getElementById('verify-sig-result').textContent = '⚠️ Please enter both message and signature.';
+        return;
+      }
+
+      try {
+        const recoveredAddress = ethers.utils.verifyMessage(message, signature);
+        document.getElementById('verify-sig-result').textContent = `✅ Recovered Address: ${recoveredAddress}`;
+      } catch (e) {
+        document.getElementById('verify-sig-result').textContent = `❌ Invalid signature: ${e.message}`;
+      }
+    }
+
+    // Load blocks on page load
+    loadBlocks();
+  </script>
+</body>
+</html>
