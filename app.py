@@ -95,4 +95,5 @@ def verify_chain():
     return jsonify({"errors": errors, "messages": messages})
 
 if __name__ == "__main__":
-    app.run(host="10.0.0.131", debug=True)
+    app.run(host="209.38.87.101", port=5000, debug=True)
+
