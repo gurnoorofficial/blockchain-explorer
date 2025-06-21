@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify, render_template
-from blockchain import load_blockchain, save_blockchain, calculate_block_hash, get_latest_eth_timestamp, get_max_words
+from blockchain import (
+    load_blockchain, save_blockchain, calculate_block_hash,
+    get_latest_eth_timestamp, get_max_words
+)
 from eth_account.messages import encode_defunct
 from eth_account import Account
-import os
 
 app = Flask(__name__, template_folder="templates")
 
@@ -51,11 +53,11 @@ def add_block():
     block_data = {
         "index": index,
         "message": message,
-        "ETH_address": recovered_address,
+        "eth_address": recovered_address,
         "signature": signature_hex,
-        "previous_hash": previous_hash,
         "timestamp": timestamp,
-        "eth_block_number": eth_block_number
+        "eth_block_number": eth_block_number,
+        "previous_hash": previous_hash,
     }
 
     block_data["hash"] = calculate_block_hash(block_data)
@@ -94,7 +96,5 @@ def verify_chain():
 
     return jsonify({"errors": errors, "messages": messages})
 
-if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
-
-
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
