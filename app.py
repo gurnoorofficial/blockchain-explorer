@@ -14,13 +14,16 @@ def index():
 
 @app.route("/chain", methods=["GET"])
 def get_chain():
-    return jsonify(load_blockchain())
+    try:
+        return jsonify(load_blockchain())
+    except Exception as e:
+        return jsonify({"error": f"Failed to load blockchain: {str(e)}"}), 500
 
 @app.route("/add_block", methods=["POST"])
 def add_block():
     data = request.get_json()
     if not data or "message" not in data or "signature" not in data:
-        return jsonify({"error": "Missing fields"}), 400
+        return jsonify({"error": "Missing message or signature"}), 400
 
     message = data["message"].strip()
     signature_hex = data["signature"].strip()
@@ -32,11 +35,15 @@ def add_block():
         encoded_msg = encode_defunct(text=message)
         recovered_address = Account.recover_message(encoded_msg, signature=bytes.fromhex(signature_hex)).lower()
     except Exception as e:
-        return jsonify({"error": "Invalid signature or message mismatch", "details": str(e)}), 400
+        return jsonify({"error": "Invalid signature", "details": str(e)}), 400
 
-    chain = load_blockchain()
+    try:
+        chain = load_blockchain()
+    except Exception as e:
+        return jsonify({"error": f"Failed to load blockchain: {str(e)}"}), 500
+
     if len(chain) >= 29:
-        return jsonify({"error": "Chain limit reached"}), 403
+        return jsonify({"error": "Chain has reached its limit (29 blocks)"}), 403
 
     index = len(chain) + 1
     max_words = get_max_words(index)
@@ -46,7 +53,7 @@ def add_block():
     try:
         timestamp, eth_block_number = get_latest_eth_timestamp()
     except Exception as e:
-        return jsonify({"error": "Ethereum timestamp failed", "details": str(e)}), 500
+        return jsonify({"error": "Ethereum timestamp fetch failed", "details": str(e)}), 500
 
     previous_hash = chain[-1]["hash"] if chain else "0" * 64
 
@@ -62,33 +69,40 @@ def add_block():
 
     block_data["hash"] = calculate_block_hash(block_data)
     chain.append(block_data)
-    save_blockchain(chain)
+
+    try:
+        save_blockchain(chain)
+    except Exception as e:
+        return jsonify({"error": f"Failed to save block: {str(e)}"}), 500
 
     return jsonify(block_data)
 
 @app.route("/verify_chain", methods=["GET"])
 def verify_chain():
-    chain = load_blockchain()
+    try:
+        chain = load_blockchain()
+    except Exception as e:
+        return jsonify({"error": f"Failed to load blockchain: {str(e)}"}), 500
+
     if not chain:
-        return jsonify({"error": "Blockchain is empty or missing"}), 400
+        return jsonify({"error": "Blockchain is empty"}), 400
 
     errors = 0
     messages = []
 
     for i, block in enumerate(chain):
-        expected_index = i + 1
+        index = i + 1
 
-        if block["index"] != expected_index:
-            messages.append(f"❌ Block {expected_index}: Incorrect index.")
+        if block["index"] != index:
+            messages.append(f"❌ Block {index}: Incorrect index")
             errors += 1
 
-        if i > 0 and block["previous_hash"] != chain[i-1]["hash"]:
-            messages.append(f"❌ Block {expected_index}: Previous hash mismatch.")
+        if i > 0 and block["previous_hash"] != chain[i - 1]["hash"]:
+            messages.append(f"❌ Block {index}: Previous hash mismatch")
             errors += 1
 
-        computed_hash = calculate_block_hash(block)
-        if block["hash"] != computed_hash:
-            messages.append(f"❌ Block {expected_index}: Hash mismatch.")
+        if calculate_block_hash(block) != block["hash"]:
+            messages.append(f"❌ Block {index}: Hash mismatch")
             errors += 1
 
     if errors == 0:

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>⛓️ TimeChain Explorer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <style>
     body {
@@ -207,10 +207,8 @@
           body: JSON.stringify({ message, signature })
         });
         const json = await res.json();
-        if (!res.ok) {
-          status.textContent = `❌ ${json.error || 'Unknown error'}`;
-        } else {
-          status.textContent = `✅ Block #${json.index} added!`;
+        status.textContent = res.ok ? `✅ Block #${json.index} added!` : `❌ ${json.error || 'Unknown error'}`;
+        if (res.ok) {
           loadBlocks();
           document.getElementById('msg').value = '';
           document.getElementById('sig').value = '';
@@ -228,12 +226,12 @@
         return;
       }
       if (!key.startsWith('0x') || key.length !== 66) {
-        document.getElementById('sign-result').textContent = '❌ Private key must be 66 chars, start with 0x';
+        document.getElementById('sign-result').textContent = '❌ Invalid private key.';
         return;
       }
       try {
         const wallet = new ethers.Wallet(key);
-        const timestamp = new Date().toISOString();
+        const timestamp = new Date().toISOString().split('.')[0];  // Removes milliseconds and Z
         const fullMessage = `${msg} ${timestamp}`;
         wallet.signMessage(fullMessage).then(sig => {
           document.getElementById('sign-result').textContent =
@@ -274,7 +272,7 @@
       }
       try {
         const addr = ethers.utils.verifyMessage(msg, sig);
-        out.textContent = `✅ Recovered Address: ${addr}`;
+        out.textContent = `✅ Signature is valid. Recovered Address: ${addr}`;
       } catch (e) {
         out.textContent = '❌ ' + e.message;
       }
