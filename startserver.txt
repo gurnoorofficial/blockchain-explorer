@@ -1,9 +1,0 @@
-python app.py
-
-
-http://localhost:5000/chain
-
-
-netstat -ano | findstr :5000
-
-
