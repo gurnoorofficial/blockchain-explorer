@@ -8,5 +8,15 @@
     "eth_block_number": 22754249,
     "previous_hash": "0000000000000000000000000000000000000000000000000000000000000000",
     "hash": "a170ab4f2be27a4eeea0d4e97f6e5d739c0788d538e5cb0a94714f7af19ab9b7"
+  },
+  {
+    "index": 2,
+    "message": "Short term 2025-06-22T03:18:58",
+    "eth_address": "0x981b288548cf004eba6e21c0f2f0ff6842806556",
+    "signature": "0xbc281e5c45d9ed6b5ad9667a7d64d1872fd2f7a27bac28e39608ae4e9e9d1f7d38d37057b208f43c1b186472c2aa810e98efc05c5e2c95ef7577bfa9ca94795c1b",
+    "timestamp": "2025-06-22T03:24:23",
+    "eth_block_number": 22757281,
+    "previous_hash": "a170ab4f2be27a4eeea0d4e97f6e5d739c0788d538e5cb0a94714f7af19ab9b7",
+    "hash": "c3601d7401d0df551bbae244632510cf4295467ad88a4587b3d9c7ebd8ef6303"
   }
 ]

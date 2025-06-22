@@ -42,14 +42,11 @@ def add_block():
         return jsonify({"error": "Missing message or signature"}), 400
 
     message = data["message"].strip()
-    signature_hex = data["signature"].strip()
-
-    if signature_hex.startswith("0x"):
-        signature_hex = signature_hex[2:]
+    signature = data["signature"].strip()
 
     try:
         encoded_msg = encode_defunct(text=message)
-        recovered_address = Account.recover_message(encoded_msg, signature=bytes.fromhex(signature_hex)).lower()
+        recovered_address = Account.recover_message(encoded_msg, signature=signature).lower()
     except Exception as e:
         return jsonify({"error": "Invalid signature", "details": str(e)}), 400
 
@@ -77,7 +74,7 @@ def add_block():
         "index": index,
         "message": message,
         "eth_address": recovered_address,
-        "signature": signature_hex,
+        "signature": signature,  # ⬅️ Save signature with 0x
         "timestamp": timestamp,
         "eth_block_number": eth_block_number,
         "previous_hash": previous_hash,
@@ -129,4 +126,3 @@ def verify_chain():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
