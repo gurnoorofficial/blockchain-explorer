@@ -5,15 +5,30 @@ from blockchain import (
 )
 from eth_account.messages import encode_defunct
 from eth_account import Account
+from datetime import datetime
 
 app = Flask(__name__, template_folder="templates")
 
+AUDIT_LOG_PATH = "/root/auditiplog"
+
+def log_visitor_ip():
+    ip = request.headers.get('X-Real-IP', request.remote_addr)
+    now = datetime.utcnow().isoformat()
+    log_entry = f"{now} - {ip}\n"
+    try:
+        with open(AUDIT_LOG_PATH, "a") as f:
+            f.write(log_entry)
+    except Exception as e:
+        print(f"⚠️ Failed to write audit log: {e}")
+
 @app.route("/")
 def index():
+    log_visitor_ip()
     return render_template("index.html")
 
 @app.route("/chain", methods=["GET"])
 def get_chain():
+    log_visitor_ip()
     try:
         return jsonify(load_blockchain())
     except Exception as e:
@@ -21,6 +36,7 @@ def get_chain():
 
 @app.route("/add_block", methods=["POST"])
 def add_block():
+    log_visitor_ip()
     data = request.get_json()
     if not data or "message" not in data or "signature" not in data:
         return jsonify({"error": "Missing message or signature"}), 400
@@ -79,6 +95,7 @@ def add_block():
 
 @app.route("/verify_chain", methods=["GET"])
 def verify_chain():
+    log_visitor_ip()
     try:
         chain = load_blockchain()
     except Exception as e:
@@ -112,3 +129,4 @@ def verify_chain():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
+
