@@ -65,8 +65,8 @@ TimeChain is designed to ensure **message authenticity, immutability, and tamper
 cd /d D:\
 
 # 2. Clone the repository
-git clone https://github.com/gurnoorofficial/blockchain-explorer.git
-cd blockchain-explorer
+git clone https://github.com/gurnoorofficial/TimeChain.git
+cd TimeChain
 
 # 3. Create and activate a virtual environment
 python -m venv venv
