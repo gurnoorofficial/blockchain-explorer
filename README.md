@@ -59,19 +59,62 @@ TimeChain is designed to ensure **message authenticity, immutability, and tamper
 - Python 3.10+
 - `pip`, `venv`
 
-### Setup
+### Setup on windows # windows + R then enter cmd
 
-```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/blockchain-explorer.git
+# 1. Change to a non-system drive (optional but recommended)
+cd /d D:\
+
+# 2. Clone the repository
+git clone https://github.com/gurnoorofficial/blockchain-explorer.git
 cd blockchain-explorer
 
-# Create and activate virtual environment
-python3 -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+# 3. Create and activate a virtual environment
+python -m venv venv
+venv\Scripts\activate
 
-# Install dependencies
+# 4. Install required dependencies
 pip install -r requirements.txt
+
+🛠️ Available Utilities
+Once your virtual environment is active, you can run the following tools:
+
+✍️ Sign Message (with timestamp)
+Generates an Ethereum signature with the current UTC timestamp included.
+
+**python sign_message.py**
+You'll be prompted to:
+
+Enter the message to sign
+Enter the private key (starts with 0x)
+The output includes:
+
+Ethereum address
+Full message (with timestamp)
+Signature (0x prefixed)
+
+🧾 Verify Signature Ownership
+Checks if a signature belongs to the claimed Ethereum address.
+
+**python check_ownership.py**
+You'll be prompted to:
+
+Enter the Ethereum address
+Enter the message
+Enter the signature
+
+The script will confirm if the signature is valid for that address and message.
+
+🔎 Verify Blockchain File Integrity
+Validates the blockchain.json file by recalculating and comparing each block's hash using Keccak-256.
+
+**python verify_local_hash.py**
+You'll be prompted to:
+
+Paste the full path to your blockchain.json file (quotes optional)
+The script outputs:
+Keccak hash for each block
+Any inconsistencies or verification failures
+
 
 # Start the app
 python app.py
