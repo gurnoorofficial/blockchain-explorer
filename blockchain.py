@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 from eth_utils import keccak
 from web3 import Web3
 
-# Constants
-BLOCKCHAIN_FILE = "blockchain.json"
-FINGERPRINT_FILE = "chain_fingerprint.txt"
+# === Constants ===
+BLOCKCHAIN_FILE = "/root/TimeChain/blockchain.json"
+FINGERPRINT_FILE = "/root/TimeChain/chain_fingerprint.txt"
 INFURA_URL = "https://mainnet.infura.io/v3/e8740e4245d64df0bb6d7966a77255c3"
 w3 = Web3(Web3.HTTPProvider(INFURA_URL))
 
-# Max word limits per index (1–29)
+# === Max word limits per block index ===
 _MAX_WORDS_LIST = [
     2000, 1900, 1850, 1800, 1700, 1600, 1550, 1500, 1400, 1300,
     1250, 1200, 1100, 1000, 950, 900, 800, 700, 650, 600,
@@ -43,7 +43,10 @@ def is_chain_valid(chain):
 
 def load_blockchain():
     if not os.path.exists(BLOCKCHAIN_FILE):
-        raise Exception("❌ blockchain.json is missing — deletion detected.")
+        if os.path.exists(FINGERPRINT_FILE):
+            raise Exception("❌ blockchain.json is missing — possible tampering or accidental deletion.")
+        print("🆕 Starting new blockchain (empty).")
+        return []
 
     with open(BLOCKCHAIN_FILE, "r") as f:
         chain = json.load(f)
@@ -51,7 +54,6 @@ def load_blockchain():
     if not is_chain_valid(chain):
         raise Exception("❌ Blockchain integrity check failed!")
 
-    # Check fingerprint
     if os.path.exists(FINGERPRINT_FILE):
         with open(FINGERPRINT_FILE, "r") as f:
             expected_hash = f.read().strip()
