@@ -1,4 +1,4 @@
-# ⛓️ TimeChain – Ethereum-Powered Message Blockchain
+# TimeChain – Ethereum-Powered Message Blockchain
 
 **TimeChain** is a minimal blockchain system that lets anyone:
 
