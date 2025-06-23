@@ -1,33 +1,44 @@
-# 🧱 Blockchain Explorer (TimeChain)
+# ⛓️ TimeChain – Ethereum-Powered Message Blockchain
 
-A lightweight, Ethereum-aware blockchain app that:
+**TimeChain** is a minimal blockchain system that lets anyone:
 
-- Allows message signing using Ethereum keys
-- Verifies signatures on-chain using Flask backend
-- Enforces dynamic word limits per block (29 → 29 max)
-- Stores blocks with Ethereum timestamp & signature
-- Built with Python, Flask, Web3.py, and eth-account
+- 📝 Submit messages signed with Ethereum keys
+- 🔐 Store them immutably and irreversibly on a custom chain
+- ⏳ Anchor each block to a real Ethereum Mainnet block time
+- 🧾 Enforce trustless, time-proof logging of statements
+- 🚫 Prevent tampering, rewrites, or unauthorized inserts
 
----
-
-## 🚀 Features
-
-- Ethereum signature verification
-- 29-block cap with strict word limits per block
-- Block hashing using Keccak-256
-- Timestamping with real Ethereum Mainnet data
-- JSON storage (`blockchain.json`)
+Each message becomes part of a permanent public history — ideal for proof-of-existence, timestamping, declarations, or censorship-resistant records.
 
 ---
 
-## 🛠️ Installation
+## ✅ Key Features
 
-### 🔧 Requirements
+- **Ethereum Signature Verification**  
+  Every message must be signed with a valid Ethereum private key.
 
-- Python 3.10+ recommended
+- **Immutable Message Ledger**  
+  Blocks cannot be altered once added — verified by Keccak-256 hashing.
+
+- **Ethereum Time Anchoring**  
+  Each block fetches real Mainnet timestamp + block number.
+
+- **Dynamic Word Limit**  
+  Enforces a decreasing word limit across 29 blocks (from 2000 → 29).
+
+- **Lightweight & Local**  
+  No database needed — all data is stored in `blockchain.json`.
+
+---
+
+## 📦 Installation
+
+### Requirements
+
+- Python 3.10+
 - `pip`, `venv`
 
-### 📦 Setup Instructions
+### Setup
 
 ```bash
 # Clone the repository
@@ -44,29 +55,42 @@ pip install -r requirements.txt
 # Start the app
 python app.py
 🌐 Web Interface
-Once running, open http://localhost:5000 in your browser.
+Once running, visit: http://localhost:5000
 
-Routes
-URL	Method	Description
-/	GET	Home page (frontend)
-/chain	GET	View the full blockchain
-/add_block	POST	Add a new block (JSON format)
-/verify_chain	GET	Validate chain integrity
+Available Endpoints
+Route	Method	Description
+/	GET	Frontend message UI
+/chain	GET	View full blockchain data
+/add_block	POST	Submit signed message (JSON)
+/verify_chain	GET	Validate all blocks + hashes
 
 📁 Project Structure
 bash
 Copy
 Edit
 blockchain-explorer/
-├── app.py                # Flask app
-├── blockchain.py         # Core blockchain logic
-├── blockchain.json       # Blockchain data
+├── app.py                # Flask API logic
+├── blockchain.py         # Core blockchain logic (hashing, limits, timestamp)
+├── blockchain.json       # Stored block history
 ├── requirements.txt      # Python dependencies
 ├── templates/
 │   └── index.html        # Frontend UI
-└── venv/                 # Virtual environment (ignored by .git)
-🔒 Word Limit Logic
-The word limit per block decreases across 29 blocks, starting at 2000 and ending at 29. Controlled in blockchain.py.
+└── venv/                 # Virtual environment (excluded from Git)
+🔒 Word Limit Per Block
+The word limit is enforced using a strict, descending list:
 
-📝 License
+Block 1: 2000 words
+
+Block 2: 1900
+
+…
+
+Block 29: 29 words
+
+Configured in blockchain.py, this mechanism prevents long messages from dominating the chain and enforces increasing compression and value per word.
+
+📜 License
 MIT License
+
+👤 Author
+Gurnoor Singh – https://github.com/gurnoorofficial
