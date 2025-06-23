@@ -113,5 +113,8 @@ This mechanism prevents long messages from dominating the chain and enforces inc
 📜 License
 MIT License
 
+git pull --rebase origin main
+git push origin main
+
 👤 Author
 Gurnoor Singh – https://github.com/gurnoorofficial
