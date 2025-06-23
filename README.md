@@ -31,7 +31,7 @@ Each message becomes part of a permanent public history — ideal for proof-of-e
 
 ---
 
-## 🔐 Cryptographic Authorship, Forgery Resistance & Time-Locked Integrity
+## 🔐 Cryptographic Authorship, Forgery Resistance & Immutable Chain
 
 TimeChain is designed to ensure **message authenticity, immutability, and tamper-proof permanence**:
 
