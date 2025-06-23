@@ -16,7 +16,7 @@ def calculate_block_hash(block_data):
     return keccak(raw).hex()
 
 def main():
-    path = input("📄 Enter path to blockchain JSON file: ").strip()
+    path = input("📄 Enter path to blockchain JSON file: ").strip().strip('"').strip("'")
 
     if not os.path.isfile(path):
         print(f"❌ File not found: {path}")
