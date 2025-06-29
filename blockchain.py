@@ -10,22 +10,19 @@ FINGERPRINT_FILE = "/root/TimeChain/chain_fingerprint.txt"
 INFURA_URL = "https://mainnet.infura.io/v3/e8740e4245d64df0bb6d7966a77255c3"
 w3 = Web3(Web3.HTTPProvider(INFURA_URL))
 
-# === Max word limits per block index ===
-_MAX_WORDS_LIST = [
-    2000, 1900, 1850, 1800, 1700, 1600, 1550, 1500, 1400, 1300,
-    1250, 1200, 1100, 1000, 950, 900, 800, 700, 650, 600,
-    500, 450, 400, 350, 300, 200, 150, 100, 29
-]
-
-def get_max_words(index):
-    return _MAX_WORDS_LIST[index - 1] if 1 <= index <= len(_MAX_WORDS_LIST) else _MAX_WORDS_LIST[-1]
+MAX_BLOCKS = 10  # ⬅️ New max block limit
 
 def keccak_hash(data):
     return keccak(data.encode() if isinstance(data, str) else data).hex()
 
+def normalize_message(msg):
+    return msg.replace('\\n', '\n').replace('\r\n', '\n').strip()
+
 def calculate_block_hash(block_data):
     block_copy = dict(block_data)
     block_copy.pop("hash", None)
+    if "message" in block_copy:
+        block_copy["message"] = normalize_message(block_copy["message"])
     data = json.dumps(block_copy, sort_keys=True, separators=(',', ':')).encode()
     return keccak(data).hex()
 
@@ -73,10 +70,11 @@ def save_blockchain(chain):
 
 def add_block(message, signature):
     chain = load_blockchain()
-    index = len(chain)
-    if len(message.split()) > get_max_words(index + 1):
-        raise ValueError("❌ Message exceeds max word limit for this block")
+    if len(chain) >= MAX_BLOCKS:
+        raise ValueError(f"❌ Maximum number of blocks ({MAX_BLOCKS}) reached.")
 
+    message = normalize_message(message)
+    index = len(chain)
     timestamp, eth_block = get_latest_eth_timestamp()
     previous_hash = calculate_block_hash(chain[-1]) if chain else "0"
 

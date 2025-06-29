@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
 from blockchain import (
     load_blockchain, save_blockchain, calculate_block_hash,
-    get_latest_eth_timestamp, get_max_words
+    get_latest_eth_timestamp
 )
 from eth_account.messages import encode_defunct
 from eth_account import Account
@@ -55,13 +55,8 @@ def add_block():
     except Exception as e:
         return jsonify({"error": f"Failed to load blockchain: {str(e)}"}), 500
 
-    if len(chain) >= 29:
-        return jsonify({"error": "Chain has reached its limit (29 blocks)"}), 403
-
-    index = len(chain) + 1
-    max_words = get_max_words(index)
-    if len(message.split()) > max_words:
-        return jsonify({"error": f"Message exceeds word limit ({max_words})"}), 400
+    if len(chain) >= 10:  # ⬅️ Updated block limit
+        return jsonify({"error": "Chain has reached its limit (10 blocks)"}), 403
 
     try:
         timestamp, eth_block_number = get_latest_eth_timestamp()
@@ -71,10 +66,10 @@ def add_block():
     previous_hash = chain[-1]["hash"] if chain else "0" * 64
 
     block_data = {
-        "index": index,
+        "index": len(chain),
         "message": message,
         "eth_address": recovered_address,
-        "signature": signature,  # ⬅️ Save signature with 0x
+        "signature": signature,
         "timestamp": timestamp,
         "eth_block_number": eth_block_number,
         "previous_hash": previous_hash,
@@ -105,8 +100,7 @@ def verify_chain():
     messages = []
 
     for i, block in enumerate(chain):
-        index = i + 1
-
+        index = i
         if block["index"] != index:
             messages.append(f"❌ Block {index}: Incorrect index")
             errors += 1

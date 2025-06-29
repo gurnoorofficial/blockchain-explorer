@@ -24,19 +24,17 @@
     header span:first-child {
       font-size: 36px;
       font-weight: bold;
-      color: white;
     }
     header span:last-child {
       font-size: 24px;
-      font-weight: bold;
       margin-left: 10px;
     }
     nav {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
       background-color: #fff;
       border-bottom: 1px solid #ccc;
+      flex-wrap: wrap;
     }
     nav button {
       padding: 12px 20px;
@@ -59,11 +57,6 @@
     section.active {
       display: block;
     }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: 600;
-    }
     textarea, input {
       width: 100%;
       padding: 10px;
@@ -71,14 +64,10 @@
       border-radius: 5px;
       border: 1px solid #ccc;
     }
-    button.action {
+    label {
+      font-weight: bold;
       margin-top: 15px;
-      background-color: #1976d2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
+      display: block;
     }
     pre {
       background-color: #f1f1f1;
@@ -95,8 +84,15 @@
       border-radius: 4px;
     }
     .block strong {
-      font-size: 16px;
       color: #0d47a1;
+    }
+    .copy-btn {
+      background-color: #e0e0e0;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin-bottom: 8px;
     }
   </style>
 </head>
@@ -185,11 +181,18 @@
       }
       container.innerHTML = data.reverse().map(b => `
         <div class="block">
-          <strong>Block #${b.index}</strong><br/>
-          Message: ${b.message}<br/>
-          Timestamp: ${b.timestamp}
+          <strong>Block #${b.index}</strong>
+          <button class="copy-btn" onclick="copyText(\`${b.message.replace(/`/g, '\\`')}\`)">Copy</button>
+          <pre>${b.message}</pre>
+          <div><strong>Timestamp:</strong> ${b.timestamp}</div>
         </div>
       `).join('');
+    }
+
+    function copyText(txt) {
+      navigator.clipboard.writeText(txt).then(() => {
+        alert("✅ Message copied exactly!");
+      });
     }
 
     async function addBlock() {
@@ -231,7 +234,7 @@
       }
       try {
         const wallet = new ethers.Wallet(key);
-        const timestamp = new Date().toISOString().split('.')[0];  // Removes milliseconds and Z
+        const timestamp = new Date().toISOString().split('.')[0];
         const fullMessage = `${msg} ${timestamp}`;
         wallet.signMessage(fullMessage).then(sig => {
           document.getElementById('sign-result').textContent =
